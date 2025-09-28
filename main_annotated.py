@@ -20,8 +20,10 @@ class MNISTNet(nn.Module):
         # Layer 2: Takes those 16 numbers and outputs 10 final scores (one for each digit 0-9)
         self.fc2 = nn.Linear(16, 10)
         
-        # ReLU activation: A simple function that makes the network more powerful
-        # It converts negative numbers to 0, keeps positive numbers unchanged
+        # ReLU activation: Introduces non-linearity to the network
+        # Without this, our network could only learn straight-line relationships
+        # ReLU keeps positive numbers unchanged, sets negative numbers to 0
+        # This simple function allows the network to learn complex, curved patterns
         self.relu = nn.ReLU()
 
     def forward(self, batch):
