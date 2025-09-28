@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from mnist_datasets import batch_size, training_dataset, testing_dataset
+from mnist_datasets import training_dataset, testing_dataset
 
 
 class MNISTNet(nn.Module):
@@ -12,9 +12,11 @@ class MNISTNet(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, batch):
+        """This function describes how data flows through our network"""
         flat = batch.view(batch.size(0), -1)
         hidden = self.relu(self.fc1(flat))
         output = self.fc2(hidden)
+
         return output
 
 
@@ -24,6 +26,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
 def evaluate_model():
+    """Test how well our network performs on images it has never seen before"""
     model.eval()
     correct = 0
     total = 0
@@ -32,39 +35,35 @@ def evaluate_model():
         for images, labels in testing_dataset:
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
+
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
     accuracy = 100 * correct / total
+
     return accuracy
 
 
 def train_model():
+    """Teach our network to recognize digits by showing it many examples"""
     model.train()
 
     running_loss = 0.0
 
     for i, (images, labels) in enumerate(training_dataset):
-        # Zero the gradients
         optimizer.zero_grad()
 
-        # Forward pass
-        outputs = model(images)  # classify a set of images
-        loss = criterion(
-            outputs, labels
-        )  # calculate how wrong the classifications were
+        outputs = model(images)
+        loss = criterion(outputs, labels)
 
-        # Backward pass and optimization
-        loss.backward()  # compute gradient for every learnable parameter
-        optimizer.step()  # use gradients to update the parameters
+        loss.backward()
+
+        optimizer.step()
 
         running_loss += loss.item()
 
-        # Print progress every 20 batches
         if (i + 1) % 20 == 0:
-            # Compute running average loss so far
             avg_loss = running_loss / (i + 1)
-            # Evaluate current test accuracy
             accuracy = evaluate_model()
             print(
                 f"Batch {i + 1}/{len(training_dataset)} - Loss: {loss.item():.4f} (avg {avg_loss:.4f}) - Test Acc: {accuracy:.2f}%"
@@ -72,15 +71,15 @@ def train_model():
 
 
 def main():
-    # untrained evaluation
+    """Main program: Test untrained network, train it, then test again"""
     print(f"Untrained accuracy: {evaluate_model():.2f}%")
+    print("Now training the network...\n")
 
     train_model()
 
-    # post-training evaluation
     final_accuracy = evaluate_model()
     print(f"\nFinal trained accuracy: {final_accuracy:.2f}%")
-    print(f"Improvement: {final_accuracy - 10:.2f} percentage points!")
 
 
-main()
+if __name__ == "__main__":
+    main()
